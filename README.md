@@ -15,7 +15,7 @@ quality confidence. This build ships exactly that gap as a product-grade feature
 frontend/  React + Vite + Tailwind (dark dashboard, same aesthetic as the real app)
 backend/   FastAPI + SQLAlchemy + SQLite  ->  nginx/Ubuntu (the stack Caprae uses)
 data/      seed dataset + scraping fixtures (real HTML/JSON the pipeline parses)
-scripts/   run.sh · seed.sh · reset.sh · e2e_check.sh
+scripts/   run.sh · seed.sh · reset.sh · test.sh · e2e_check.sh
 ```
 
 ---
@@ -39,6 +39,22 @@ scripts/run.sh                   # starts both, tails logs
 Open **http://localhost:5173**. The first load auto-seeds 37 leads (22 curated + 15
 parsed from 3 scraping fixtures) and computes every score.
 
+## Testing
+
+**Unit tests** (`scripts/test.sh`, ~51 tests): scoring engines (market gate,
+outreachability gate, tiers), dedup (compound-suffix domains, fuzzy names, resolve),
+field validation (email syntax/MX, phone shapes, domain), and a full API smoke suite
+(health, stats, filters, dedup report, CSV export, fixture re-scrape). Tests run
+against an isolated temp DB with DNS disabled — deterministic, offline, fast:
+
+```bash
+scripts/test.sh            # pytest backend/tests
+```
+
+**E2E check** (`scripts/e2e_check.sh`): boots backend + frontend, verifies health,
+the Vite `/api` proxy, sorted lead queue, and CSV export through the real stack, then
+tears everything down.
+
 ---
 
 ## Architecture & design decisions
@@ -46,10 +62,10 @@ parsed from 3 scraping fixtures) and computes every score.
 | Decision | Choice | Why |
 |---|---|---|
 | Backend | **FastAPI** (Python) | Caprae's own live stack is Flask on Ubuntu nginx; their job posting names FastAPI/Flask. Python keeps the scoring/enrichment logic readable. |
-| Storage | **SQLAlchemy + SQLite (`backend/instance/`)** | Zero-infra so the grader can run it anywhere; schema maps 1:1 to Postgres (swap `DATABASE_URL`). |
+| Storage | **SQLAlchemy + SQLite (`backend/instance/`)** | Zero-infra so it runs anywhere out of the box; schema maps 1:1 to Postgres (swap `DATABASE_URL`). |
 | Frontend | **React + Vite + Tailwind** | Matches Caprae's React/Next.js apps; same dark `#121826` design language. |
 | Hosting (prod path) | Ubuntu + nginx (reverse-proxying uvicorn) + CloudFront | Mirrors `data.saasquatchleads.com` (nginx on EC2). |
-| Scraping | **Pluggable source adapters** (`scraper.py`) | `business_directory_card`, `business_directory_table`, `public_registry`. Swapping CSS selectors adapts a *changed* site layout — the rubric's "changing websites" test. Runs offline on fixtures so the demo is deterministic and TOS-safe. |
+| Scraping | **Pluggable source adapters** (`scraper.py`) | `business_directory_card`, `business_directory_table`, `public_registry`. Swapping CSS selectors adapts to a *changed* site layout. Runs offline on fixtures so the demo is deterministic and TOS-safe. |
 
 **Scoring model** (`scoring.py`) — three explainable sub-scores + a gate:
 
@@ -104,29 +120,6 @@ Interactive docs at `/docs` when the backend runs.
 
 ---
 
-## 2-minute demo script (record this with the app on screen)
-
-1. **0:00 – Hook (10s)** — "SaaSquatch finds leads but doesn't tell you *who to call
-   first*. I fixed that in 5 hours: every lead now gets an ICP, completeness and
-   confidence score, plus dedup and email validation."
-2. **0:15 – Show the queue (25s)** — "37 leads, tiered hot/warm/cold. Sortable by
-   priority. BerryClean at 92 — perfect fit: US cleaning service, 59 staff, verified
-   email."
-3. **0:40 – Explain the score drawer (25s)** — Open a lead. "Why 92? ICP 98 — right
-   industry/location/size; confidence 75 — email MX-verified; freshness from the
-   capture date. Compare with Northwind: great fit but *no contact info* — the
-   outreachability gate drops it to warm, not hot."
-4. **1:05 – Dedup tab (20s)** — "Two BerryClean records from different sources,
-   99% match. The engine keeps the richer one; one click resolves the duplicate."
-5. **1:25 – Validation + export (15s)** — "Invalid/disposable emails are auto-flagged
-   (Redwood Pest Control's fake domain). Export CSV honours every filter — straight
-   into your outreach tool."
-6. **1:40 – Close (20s)** — "Three decisions I'd defend: Python backend because it
-   matches your stack and keeps scoring readable; the market gate because fit beats
-   polish; offline fixtures so scraping is ethical and deterministic."
-
----
-
 ## Files
 
 ```
@@ -144,4 +137,10 @@ data/
 frontend/src/
   App.jsx                  tabs, filters, state
   components/              header, stats, lead table, score drawer, dedup, export
+backend/tests/
+  conftest.py              isolated temp DB + offline-network setup
+  test_scoring.py          market gate, outreachability, tiers
+  test_dedup.py            domain normalisation + cluster marking
+  test_validation.py       email / phone / domain checks
+  test_api.py              health, queue, dedup report, resolve, CSV, scrape
 ```

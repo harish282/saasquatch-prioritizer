@@ -15,3 +15,6 @@ frontend/dist/
 
 # Confidential interview material — not for submission
 *.pdf
+
+# Personal submission draft (salary/status answers) — keep out of the repo
+SUBMISSION_EMAIL.md

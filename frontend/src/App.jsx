@@ -60,9 +60,22 @@ export default function App() {
     load();
   }, [load]);
 
-  const openFirstLead = async (id) => {
-    const res = await api.lead(id);
-    setSelected(res.lead);
+  const openLead = async (lead) => {
+    try {
+      const res = await api.lead(lead.id);
+      setSelected(res.lead);
+    } catch (e) {
+      setError(`Failed to load lead: ${e.message}`);
+    }
+  };
+
+  const handleResolve = async (id) => {
+    try {
+      await api.resolve(id);
+      await load();
+    } catch (e) {
+      setError(`Failed to resolve: ${e.message}`);
+    }
   };
 
   const handleSort = (field) => {
@@ -125,9 +138,9 @@ export default function App() {
                 leads={leads}
                 sort={sort}
                 onSort={handleSort}
-                onOpen={openFirstLead}
+                onOpen={openLead}
                 filters={filters}
-                onResolve={refresh}
+                onResolve={handleResolve}
               />
             )}
           </>
@@ -139,7 +152,7 @@ export default function App() {
       <ScoreDrawer lead={selected} onClose={() => setSelected(null)} />
 
       <footer className="mx-auto max-w-7xl px-6 py-6 text-center text-[11px] text-slate-600">
-        SaaSquatch Prioritizer — 5-hour build · scoring &amp; data-quality layer for lead-gen · FastAPI + React
+        SaaSquatch Prioritizer · scoring &amp; data-quality layer for lead-gen · FastAPI + React
       </footer>
     </div>
   );

@@ -1,7 +1,7 @@
 """Field-level validation: email syntax + MX, phone shape, domain resolvability.
 
 Every check is defensive: network failures never raise, they degrade a field's
-status to "unknown" so scoring stays robust (a rubric strength).
+status to "unknown" so scoring stays robust.
 """
 
 from __future__ import annotations
@@ -24,7 +24,8 @@ _DISPOSABLE_DOMAINS = {
 _DISPOSABLE_SUFFIXES = ("mailinator", "guerrillamail", "yopmail", "tempmail", "maildrop")
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-_PHONE_RE = re.compile(r"^\+?[0-9][0-9 \-().xext]{5,24}$", re.IGNORECASE)
+# First char may be '(' for "(415) 555-0134"-style strings; separators in the middle.
+_PHONE_RE = re.compile(r"^\s*\+?\(?[0-9](?:[\s\-().]*[0-9]){5,24}$", re.IGNORECASE)
 _CANADIAN_US_RE = re.compile(r"^(\+1|1)[\s\-().]*[2-9][0-9]{2}[\s\-().]*[2-9][0-9]{2}[\s\-().]*[0-9]{4}$")
 _HAS_DIGITS_RE = re.compile(r"[0-9]")
 
@@ -88,6 +89,7 @@ def validate_email(email: str | None) -> dict:
                 "issues": issues}
     if normalized_domain in {"gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com",
                              "aol.com", "protonmail.com", "gmx.com", "mail.com"}:
+        # Informational note: still deliverable, but prefer the company domain for B2B.
         issues.append("Personal/HOA email — prefer company domain for B2B outreach")
 
     # MX deliverability
@@ -99,13 +101,12 @@ def validate_email(email: str | None) -> dict:
             mx_status = "verified" if mx_found else "noMX"
     except Exception:
         mx_status = "unresolvable"
+
+    # Only genuine delivery blockers downgrade the status; an informational
+    # personal-email note alone (or an unreachable MX check) keeps it verified.
+    status = "verified"
     if mx_status in ("noMX", "unresolvable"):
         issues.append("Domain has no resolvable MX records")
-
-    status = "verified"
-    if issues:
-        status = "risky" if mx_status != "verified" else "verified"
-    if mx_status == "unresolvable":
         status = "risky"
     return {
         "ok": status in ("verified", "risky"),

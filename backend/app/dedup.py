@@ -34,9 +34,9 @@ def normalize_domain(domain: str | None) -> str | None:
     """acme.com, www.acme.co.uk, Acme-Corp.biz -> 'acme' or 'acmecorp'."""
     if not domain:
         return None
-    d = domain.strip().lower().rstrip(".").removeprefix("www.")
-    d = d.replace("http://", "").replace("https://", "").split(";")[0].split(",")[0]
-    d = d.split("/")[0]
+    d = domain.strip().lower().rstrip(".")
+    d = d.replace("http://", "").replace("https://", "").split(";")[0].split(",")[0].split("/")[0]
+    d = d.removeprefix("www.")
     parts = d.split(".")
     if not parts or parts[0] == "":
         return None

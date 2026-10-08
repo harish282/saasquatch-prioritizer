@@ -2,7 +2,7 @@
 
 Runs fully offline against bundled fixtures so the demo is deterministic, but the
 selector-driven adapters genuinely parse HTML/JSON — the same code path handles
-"changing website structures" (a rubric strength) by swapping selector configs.
+"changing website structures" by swapping selector configs.
 """
 
 from __future__ import annotations
