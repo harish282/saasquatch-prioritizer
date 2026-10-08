@@ -1,0 +1,63 @@
+{
+  "records": [
+    {
+      "name": "BerryClean Cleaning Company",
+      "website": "https://www.berryclean.com",
+      "industry": "House cleaning",
+      "city": "San Carlos",
+      "country": "USA",
+      "employees": "~60",
+      "owner": {"first_name": "Maria", "last_name": "Gonzales"},
+      "email": "maria.g@berryclean.com",
+      "linkedin": "https://www.linkedin.com/company/berryclean",
+      "description": "Cleaning services for the Bay Area since 2009."
+    },
+    {
+      "name": "Finch & Crane CPAs",
+      "website": "https://finchcrane.com",
+      "industry": "Accounting",
+      "city": "Boise",
+      "country": "USA",
+      "employees": "18",
+      "owner": {"first_name": "Alan", "last_name": "Crane"},
+      "email": "alan@finchcrane.com",
+      "phone": "+1 (208) 555-0120",
+      "linkedin": "https://www.linkedin.com/company/finch-crane-cpas",
+      "description": "Tax and advisory for SMB owners."
+    },
+    {
+      "name": "Golden State Bistro",
+      "website": "https://goldenstatebistro.com",
+      "industry": "Restaurant",
+      "city": "Los Angeles",
+      "country": "USA",
+      "employees": "26",
+      "owner": {"first_name": "Lucia", "last_name": "Moreno"},
+      "email": "lucia@goldenstatebistro.com",
+      "phone": "(323) 555-0188",
+      "linkedin": "https://www.linkedin.com/company/golden-state-bistro"
+    },
+    {
+      "name": "Meridian Marketing Group",
+      "website": "https://meridianmarketing.com",
+      "industry": "Marketing agency",
+      "city": "Austin",
+      "country": "USA",
+      "employees": "14",
+      "owner": {"first_name": "Sam", "last_name": "Okoye"},
+      "email": "sam@meridianmarketing.com",
+      "phone": "+1 (512) 555-0117"
+    },
+    {
+      "name": "Prairie Logistics LLC",
+      "website": "https://prairielogistics.com",
+      "industry": "Logistics & trucking",
+      "city": "Omaha",
+      "country": "USA",
+      "employees": "220",
+      "owner": {"first_name": "Trent", "last_name": "Bower"},
+      "email": "trent@prairielogistics.com",
+      "phone": "(402) 555-0139"
+    }
+  ]
+}
